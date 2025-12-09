@@ -1,264 +1,267 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface Payment {
   id: string;
-  company: string;
-  amount: number;
-  status: 'completed' | 'pending' | 'failed';
-  date: string;
+  service: string;
   category: string;
+  amount: number;
+  date: string;
+  status: 'active' | 'inactive';
 }
 
 const mockPayments: Payment[] = [
-  { id: '1', company: 'ООО "Техносервис"', amount: 125000, status: 'completed', date: '2024-12-09', category: 'Оборудование' },
-  { id: '2', company: 'ИП Иванов', amount: 45000, status: 'pending', date: '2024-12-08', category: 'Услуги' },
-  { id: '3', company: 'АО "Стройматериалы"', amount: 320000, status: 'completed', date: '2024-12-07', category: 'Материалы' },
-  { id: '4', company: 'ООО "Логистика Плюс"', amount: 78000, status: 'failed', date: '2024-12-06', category: 'Доставка' },
-  { id: '5', company: 'ООО "Консалтинг"', amount: 150000, status: 'completed', date: '2024-12-05', category: 'Услуги' },
-  { id: '6', company: 'ИП Петрова', amount: 32000, status: 'pending', date: '2024-12-04', category: 'Реклама' },
+  { id: '1', service: 'AWS EC2', category: 'Серверы', amount: 15000, date: '2024-12-09', status: 'active' },
+  { id: '2', service: 'Slack', category: 'Коммуникации', amount: 8000, date: '2024-12-08', status: 'active' },
+  { id: '3', service: 'CloudFlare', category: 'Веб-сайты', amount: 5000, date: '2024-12-07', status: 'active' },
+  { id: '4', service: 'Norton Security', category: 'Безопасность', amount: 3000, date: '2024-12-06', status: 'inactive' },
 ];
 
 const chartData = [
-  { name: 'Янв', income: 450000, expense: 320000 },
-  { name: 'Фев', income: 520000, expense: 380000 },
-  { name: 'Мар', income: 480000, expense: 350000 },
-  { name: 'Апр', income: 610000, expense: 420000 },
-  { name: 'Май', income: 580000, expense: 390000 },
-  { name: 'Июн', income: 650000, expense: 450000 },
+  { name: 'Серверы', value: 15000 },
+  { name: 'Коммуникации', value: 8000 },
+  { name: 'Веб-сайты', value: 5000 },
+  { name: 'Безопасность', value: 3000 },
 ];
 
 const pieData = [
-  { name: 'Оборудование', value: 125000, color: '#9b87f5' },
-  { name: 'Услуги', value: 195000, color: '#D946EF' },
-  { name: 'Материалы', value: 320000, color: '#F97316' },
-  { name: 'Доставка', value: 78000, color: '#0EA5E9' },
-  { name: 'Реклама', value: 32000, color: '#22C55E' },
+  { name: 'Серверы', value: 15000, color: '#7551e9' },
+  { name: 'Коммуникации', value: 8000, color: '#3965ff' },
+  { name: 'Веб-сайты', value: 5000, color: '#ffb547' },
+  { name: 'Безопасность', value: 3000, color: '#01b574' },
 ];
 
 const Index = () => {
-  const [payments, setPayments] = useState<Payment[]>(mockPayments);
-  const [filter, setFilter] = useState<string>('all');
+  const [payments] = useState<Payment[]>(mockPayments);
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const totalIncome = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
-  const totalPending = payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
-  const totalFailed = payments.filter(p => p.status === 'failed').reduce((sum, p) => sum + p.amount, 0);
+  const totalExpenses = payments.reduce((sum, p) => sum + p.amount, 0);
+  const serverExpenses = payments.filter(p => p.category === 'Серверы').reduce((sum, p) => sum + p.amount, 0);
+  const commExpenses = payments.filter(p => p.category === 'Коммуникации').reduce((sum, p) => sum + p.amount, 0);
+  const webExpenses = payments.filter(p => p.category === 'Веб-сайты').reduce((sum, p) => sum + p.amount, 0);
+  const secExpenses = payments.filter(p => p.category === 'Безопасность').reduce((sum, p) => sum + p.amount, 0);
 
-  const filteredPayments = filter === 'all' 
-    ? payments 
-    : payments.filter(p => p.status === filter);
+  const filteredPayments = payments.filter(p => 
+    p.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; icon: string; label: string }> = {
-      completed: { variant: 'default', icon: 'CheckCircle', label: 'Выполнен' },
-      pending: { variant: 'secondary', icon: 'Clock', label: 'В обработке' },
-      failed: { variant: 'destructive', icon: 'XCircle', label: 'Отклонен' },
-    };
-    const config = variants[status] || variants.pending;
-    return (
-      <Badge variant={config.variant} className="flex items-center gap-1 w-fit">
-        <Icon name={config.icon} size={14} />
-        {config.label}
-      </Badge>
+    return status === 'active' ? (
+      <Badge className="bg-success text-success-foreground">Активен</Badge>
+    ) : (
+      <Badge variant="secondary">Неактивен</Badge>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-pink-50/30 dark:from-background dark:via-purple-950/20 dark:to-pink-950/20">
-      <div className="container mx-auto p-6 space-y-8">
-        <header className="flex items-center justify-between animate-fade-in">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Финансовый дашборд
-            </h1>
-            <p className="text-muted-foreground mt-2">Управление платежами и операциями</p>
-          </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button size="lg" className="gradient-purple text-white hover:opacity-90 transition-all hover-lift shadow-lg">
-                <Icon name="Plus" className="mr-2" size={20} />
-                Новый платеж
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Создать платеж</DialogTitle>
-                <DialogDescription>Заполните данные для нового платежа</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="company">Компания</Label>
-                  <Input id="company" placeholder="ООО Компания" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Сумма (₽)</Label>
-                  <Input id="amount" type="number" placeholder="100000" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category">Категория</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите категорию" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="equipment">Оборудование</SelectItem>
-                      <SelectItem value="services">Услуги</SelectItem>
-                      <SelectItem value="materials">Материалы</SelectItem>
-                      <SelectItem value="delivery">Доставка</SelectItem>
-                      <SelectItem value="ads">Реклама</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button className="w-full gradient-purple text-white">Создать платеж</Button>
+    <div className="flex min-h-screen bg-background">
+      <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col fixed h-screen">
+        <div className="p-5 border-b border-sidebar-border">
+          <a href="#" className="flex items-center gap-3 text-sidebar-foreground">
+            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-lg">
+              V
+            </div>
+            <span className="font-bold text-lg">Vision UI</span>
+          </a>
+        </div>
+        
+        <nav className="flex-1 p-4">
+          <ul className="space-y-1">
+            <li>
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  activeTab === 'dashboard'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                }`}
+              >
+                <Icon name="Home" size={20} />
+                <span>Дашборд</span>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveTab('payments')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  activeTab === 'payments'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                }`}
+              >
+                <Icon name="CreditCard" size={20} />
+                <span>Платежи</span>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => setActiveTab('services')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  activeTab === 'services'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                }`}
+              >
+                <Icon name="Package" size={20} />
+                <span>Сервисы</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main className="flex-1 ml-64">
+        <header className="bg-card/50 backdrop-blur-xl border-b border-border px-6 py-4 sticky top-0 z-10">
+          <div className="flex items-center justify-between">
+            <div className="relative max-w-md flex-1">
+              <Icon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <Input
+                type="text"
+                placeholder="Поиск сервисов..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-11 bg-card border-input"
+              />
+            </div>
+            <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-card border border-border">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold shadow-lg">
+                А
               </div>
-            </DialogContent>
-          </Dialog>
+              <div>
+                <div className="text-sm font-semibold">Администратор</div>
+                <div className="text-xs text-muted-foreground">Администратор</div>
+              </div>
+            </div>
+          </div>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
-          <Card className="glass-card hover-lift border-0 shadow-xl">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Завершенные</CardTitle>
-                <div className="w-10 h-10 rounded-full gradient-success flex items-center justify-center">
-                  <Icon name="TrendingUp" size={20} className="text-white" />
+        <div className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
+            <Card className="border-0 shadow-xl bg-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Общие IT Расходы</CardTitle>
+                    <CardDescription>Все время</CardDescription>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <Icon name="Server" size={24} />
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{totalIncome.toLocaleString('ru-RU')} ₽</div>
-              <p className="text-xs text-muted-foreground mt-2">+12.5% за месяц</p>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-extrabold">{totalExpenses.toLocaleString('ru-RU')} ₽</div>
+                <p className="text-sm text-muted-foreground mt-1">Начните добавлять платежи</p>
+              </CardContent>
+            </Card>
 
-          <Card className="glass-card hover-lift border-0 shadow-xl">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">В обработке</CardTitle>
-                <div className="w-10 h-10 rounded-full gradient-blue flex items-center justify-center">
-                  <Icon name="Clock" size={20} className="text-white" />
+            <Card className="border-0 shadow-xl bg-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Серверная Инфраструктура</CardTitle>
+                    <CardDescription>Расходы на серверы</CardDescription>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary">
+                    <Icon name="Database" size={24} />
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{totalPending.toLocaleString('ru-RU')} ₽</div>
-              <p className="text-xs text-muted-foreground mt-2">2 платежа</p>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-extrabold">{serverExpenses.toLocaleString('ru-RU')} ₽</div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {totalExpenses > 0 ? `${((serverExpenses / totalExpenses) * 100).toFixed(0)}%` : '0%'} от общего бюджета
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card className="glass-card hover-lift border-0 shadow-xl">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Отклоненные</CardTitle>
-                <div className="w-10 h-10 rounded-full gradient-orange flex items-center justify-center">
-                  <Icon name="AlertCircle" size={20} className="text-white" />
+            <Card className="border-0 shadow-xl bg-card">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Всего Платежей</CardTitle>
+                    <CardDescription>История операций</CardDescription>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+                    <Icon name="Package" size={24} />
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{totalFailed.toLocaleString('ru-RU')} ₽</div>
-              <p className="text-xs text-muted-foreground mt-2">1 платеж</p>
-            </CardContent>
-          </Card>
-        </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-extrabold">{payments.length}</div>
+                <p className="text-sm text-muted-foreground mt-1">платежей за все время</p>
+              </CardContent>
+            </Card>
+          </div>
 
-        <Tabs defaultValue="analytics" className="animate-scale-in">
-          <TabsList className="grid w-full max-w-md grid-cols-2 mx-auto mb-8 glass-card">
-            <TabsTrigger value="analytics" className="data-[state=active]:gradient-purple data-[state=active]:text-white">
-              <Icon name="BarChart3" className="mr-2" size={16} />
-              Аналитика
-            </TabsTrigger>
-            <TabsTrigger value="transactions" className="data-[state=active]:gradient-purple data-[state=active]:text-white">
-              <Icon name="List" className="mr-2" size={16} />
-              Транзакции
-            </TabsTrigger>
-          </TabsList>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5 animate-slide-up">
+            <Card className="border-0 shadow-lg bg-card hover-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <Icon name="Server" size={22} />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">{serverExpenses.toLocaleString('ru-RU')} ₽</div>
+                    <div className="text-sm text-muted-foreground">Серверы</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="glass-card border-0 shadow-xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Icon name="TrendingUp" className="text-primary" />
-                    Динамика доходов
-                  </CardTitle>
-                  <CardDescription>Доходы и расходы за 6 месяцев</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))', 
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }} 
-                      />
-                      <Legend />
-                      <Line type="monotone" dataKey="income" stroke="#9b87f5" strokeWidth={3} name="Доходы" />
-                      <Line type="monotone" dataKey="expense" stroke="#F97316" strokeWidth={3} name="Расходы" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+            <Card className="border-0 shadow-lg bg-card hover-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary">
+                    <Icon name="MessageSquare" size={22} />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">{commExpenses.toLocaleString('ru-RU')} ₽</div>
+                    <div className="text-sm text-muted-foreground">Коммуникации</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              <Card className="glass-card border-0 shadow-xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Icon name="PieChart" className="text-secondary" />
-                    Распределение по категориям
-                  </CardTitle>
-                  <CardDescription>Структура расходов</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))', 
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }} 
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
+            <Card className="border-0 shadow-lg bg-card hover-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+                    <Icon name="Globe" size={22} />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">{webExpenses.toLocaleString('ru-RU')} ₽</div>
+                    <div className="text-sm text-muted-foreground">Веб-сайты</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            <Card className="glass-card border-0 shadow-xl">
+            <Card className="border-0 shadow-lg bg-card hover-lift">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center text-success">
+                    <Icon name="Shield" size={22} />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">{secExpenses.toLocaleString('ru-RU')} ₽</div>
+                    <div className="text-sm text-muted-foreground">Безопасность</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-scale-in">
+            <Card className="border-0 shadow-xl bg-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Icon name="BarChart2" className="text-accent" />
-                  Сравнение периодов
-                </CardTitle>
-                <CardDescription>Помесячное сравнение</CardDescription>
+                <CardTitle>IT Расходы по Категориям</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
@@ -266,77 +269,104 @@ const Index = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
                     <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }} 
+                        borderRadius: '8px',
+                      }}
                     />
-                    <Legend />
-                    <Bar dataKey="income" fill="#9b87f5" radius={[8, 8, 0, 0]} name="Доходы" />
-                    <Bar dataKey="expense" fill="#F97316" radius={[8, 8, 0, 0]} name="Расходы" />
+                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={pieData[index].color} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="transactions" className="space-y-4">
-            <Card className="glass-card border-0 shadow-xl">
+            <Card className="border-0 shadow-xl bg-card">
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>История транзакций</CardTitle>
-                    <CardDescription>Все финансовые операции</CardDescription>
-                  </div>
-                  <Select value={filter} onValueChange={setFilter}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Все статусы</SelectItem>
-                      <SelectItem value="completed">Завершенные</SelectItem>
-                      <SelectItem value="pending">В обработке</SelectItem>
-                      <SelectItem value="failed">Отклоненные</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <CardTitle>Распределение Затрат</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {filteredPayments.map((payment, index) => (
-                    <div 
-                      key={payment.id} 
-                      className="flex items-center justify-between p-4 rounded-lg glass-card hover-lift border transition-all"
-                      style={{ animationDelay: `${index * 0.1}s` }}
+                <ResponsiveContainer width="100%" height={350}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={120}
+                      fill="#8884d8"
+                      dataKey="value"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full gradient-purple flex items-center justify-center text-white font-bold shadow-lg">
-                          {payment.company.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-semibold">{payment.company}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {payment.category}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">{payment.date}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right space-y-2">
-                        <p className="text-xl font-bold">{payment.amount.toLocaleString('ru-RU')} ₽</p>
-                        {getStatusBadge(payment.status)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+          </div>
+
+          <Card className="border-0 shadow-xl bg-card animate-fade-in">
+            <CardHeader>
+              <CardTitle>IT Сервисы и Расходы</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-4 px-4 text-sm font-bold text-muted-foreground">Сервис</th>
+                      <th className="text-left py-4 px-4 text-sm font-bold text-muted-foreground">Категория</th>
+                      <th className="text-left py-4 px-4 text-sm font-bold text-muted-foreground">Сумма (₽)</th>
+                      <th className="text-left py-4 px-4 text-sm font-bold text-muted-foreground">Дата</th>
+                      <th className="text-left py-4 px-4 text-sm font-bold text-muted-foreground">Статус</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredPayments.length > 0 ? (
+                      filteredPayments.map((payment) => (
+                        <tr key={payment.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                          <td className="py-4 px-4 font-medium">{payment.service}</td>
+                          <td className="py-4 px-4 text-muted-foreground">{payment.category}</td>
+                          <td className="py-4 px-4 font-semibold">{payment.amount.toLocaleString('ru-RU')}</td>
+                          <td className="py-4 px-4 text-muted-foreground">{payment.date}</td>
+                          <td className="py-4 px-4">{getStatusBadge(payment.status)}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="py-16 text-center">
+                          <div className="flex flex-col items-center gap-4">
+                            <Icon name="CreditCard" size={48} className="text-muted-foreground opacity-50" />
+                            <div>
+                              <div className="text-lg font-semibold mb-1">Платежи не найдены</div>
+                              <div className="text-sm text-muted-foreground">Добавьте первый платеж</div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     </div>
   );
 };

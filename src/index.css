@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,95 +6,95 @@
 
 @layer base {
   :root {
-    --background: 250 100% 98%;
-    --foreground: 260 10% 15%;
+    --background: 222 47% 11%;
+    --foreground: 0 0% 100%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 260 10% 15%;
+    --card: 223 47% 14%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 260 10% 15%;
+    --popover: 223 47% 14%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 263 70% 75%;
+    --primary: 256 65% 62%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 280 70% 65%;
+    --secondary: 225 95% 60%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 250 30% 95%;
-    --muted-foreground: 260 10% 45%;
+    --muted: 222 47% 20%;
+    --muted-foreground: 220 13% 69%;
 
-    --accent: 25 95% 60%;
+    --accent: 32 98% 64%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 91% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 76% 45%;
+    --success: 152 69% 36%;
     --success-foreground: 0 0% 100%;
 
-    --info: 199 89% 55%;
+    --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
 
-    --border: 250 20% 90%;
-    --input: 250 20% 90%;
-    --ring: 263 70% 75%;
+    --border: 222 47% 18%;
+    --input: 222 47% 18%;
+    --ring: 256 65% 62%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --sidebar-background: 260 15% 8%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 263 70% 75%;
+    --sidebar-background: 223 47% 14%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 256 65% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 260 15% 12%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 260 15% 15%;
-    --sidebar-ring: 263 70% 75%;
+    --sidebar-accent: 222 47% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 222 47% 18%;
+    --sidebar-ring: 256 65% 62%;
   }
 
   .dark {
-    --background: 260 15% 8%;
-    --foreground: 0 0% 95%;
+    --background: 222 47% 11%;
+    --foreground: 0 0% 100%;
 
-    --card: 260 15% 10%;
-    --card-foreground: 0 0% 95%;
+    --card: 223 47% 14%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 260 15% 10%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 223 47% 14%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 263 70% 75%;
-    --primary-foreground: 260 15% 8%;
+    --primary: 256 65% 62%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 280 70% 65%;
+    --secondary: 225 95% 60%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 260 15% 15%;
-    --muted-foreground: 260 5% 65%;
+    --muted: 222 47% 20%;
+    --muted-foreground: 220 13% 69%;
 
-    --accent: 25 95% 60%;
+    --accent: 32 98% 64%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 91% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 76% 45%;
+    --success: 152 69% 36%;
     --success-foreground: 0 0% 100%;
 
-    --info: 199 89% 55%;
+    --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
 
-    --border: 260 15% 18%;
-    --input: 260 15% 18%;
-    --ring: 263 70% 75%;
+    --border: 222 47% 18%;
+    --input: 222 47% 18%;
+    --ring: 256 65% 62%;
 
-    --sidebar-background: 260 15% 8%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 263 70% 75%;
+    --sidebar-background: 223 47% 14%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 256 65% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 260 15% 12%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 260 15% 15%;
-    --sidebar-ring: 263 70% 75%;
+    --sidebar-accent: 222 47% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 222 47% 18%;
+    --sidebar-ring: 256 65% 62%;
   }
 }
 
@@ -105,7 +105,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Open Sans", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
   }
 
   h1,
@@ -114,7 +114,7 @@
   h4,
   h5,
   h6 {
-    font-family: "Montserrat", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
   }
 }
